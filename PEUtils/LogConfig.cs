@@ -6,6 +6,18 @@ namespace PEUtils {
         Console
     }
 
+    public enum LogColor {
+        None,
+        Red,
+        Green,
+        Blue,
+        Cyan,
+        Magenta,
+        Yellow
+    }
+
+
+
     public class LogConfig {
         public string logPrefix = "#";
         public string logSeparate = ">>";
@@ -17,8 +29,15 @@ namespace PEUtils {
         public bool enableSave = true;
         public bool enableCover = true;
 
-        public LoggerType LoggerType = LoggerType.Console;
+        public LoggerType loggerType = LoggerType.Console;
         public string saveName = "ConsolePELog.txt";
-        public string savePath = string.Format("{0}Logs\\", AppDomain.CurrentDomain.BaseDirectory);
+        public string savePath = $"{AppDomain.CurrentDomain.BaseDirectory}Logs\\";
+    }
+
+    interface ILogger {
+        void Log(string msg, LogColor color = LogColor.None);
+        void Wain(string msg, LogColor color = LogColor.Yellow);
+        void Error(string msg, LogColor color = LogColor.Red);
+
     }
 }
