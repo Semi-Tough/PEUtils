@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Text;
 using System.Threading;
 
@@ -89,6 +90,7 @@ namespace PEUtils {
 
         public static LogConfig logCfg;
         private static ILogger logger;
+        private static StreamWriter streamWriter;
         public static void InitSetting(LogConfig cfg = null) {
             logCfg = cfg ?? new LogConfig();
 
@@ -98,16 +100,54 @@ namespace PEUtils {
             else {
                 logger = new UnityLogger();
             }
-        }
 
+            if (logCfg.enableSave == false) {
+                return;
+            }
+            else if (logCfg.enableCover) {
+                string path = logCfg.savePath + logCfg.saveName;
+                try {
+                    if (Directory.Exists(logCfg.savePath)) {
+                        if (File.Exists(path)) {
+                            File.Delete(path);
+                        }
+                    }
+                    else {
+                        Directory.CreateDirectory(logCfg.savePath);
+                    }
+                    streamWriter = File.AppendText(path);
+                    streamWriter.AutoFlush = true;
+                }
+                catch {
+                    streamWriter = null;
+                }
+            }
+            else {
+                string prefix = DateTime.Now.ToString("yyyyMMdd@HH-mm-ss");
+                string path = logCfg.savePath + prefix + logCfg.saveName;
+                try {
+                    if (Directory.Exists(cfg.savePath) == false) {
+                        Directory.CreateDirectory(logCfg.savePath);
+                    }
+                    streamWriter = File.AppendText(path);
+                    streamWriter.AutoFlush = true;
+
+                }
+                catch {
+                }
+            }
+
+        }
         public static void Log(string msg) {
             if (logCfg.enableLog == false) {
                 return;
             }
-            msg = DecorateLog($"{msg}",true);
+            msg = DecorateLog($"{msg}", true);
             logger.Log(msg);
+            if (logCfg.enableSave) {
+                WriteToFile(msg);
+            }
         }
-
         public static string DecorateLog(string msg, bool isTrac = false) {
             StringBuilder sb = new StringBuilder(logCfg.logPrefix, 100);
             if (logCfg.enableTime) {
@@ -124,7 +164,6 @@ namespace PEUtils {
             }
             return sb.ToString();
         }
-
         private static string GetTime() {
             return $"  {DateTime.Now.ToString("hh:mm:ss--fff")}";
         }
@@ -142,6 +181,16 @@ namespace PEUtils {
 
             return $"\nStackTrace: {trackInfo}";
         }
-    }
+        private static void WriteToFile(string msg) {
+            if (streamWriter != null) {
+                try {
+                    streamWriter.WriteLine($"[L] { msg}");
+                }
+                catch {
+                    streamWriter = null;
+                }
+            }
+        }
 
+    }
 }
