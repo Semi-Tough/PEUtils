@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Text;
+using System.Threading;
 
 namespace PEUtils {
 
@@ -97,12 +100,47 @@ namespace PEUtils {
             }
         }
 
-        public static void Log(string msg, params object[] args) {
+        public static void Log(string msg) {
             if (logCfg.enableLog == false) {
                 return;
             }
-            msg = String.Format(msg, args);
+            msg = DecorateLog($"{msg}",true);
             logger.Log(msg);
+        }
+
+        public static string DecorateLog(string msg, bool isTrac = false) {
+            StringBuilder sb = new StringBuilder(logCfg.logPrefix, 100);
+            if (logCfg.enableTime) {
+                sb.Append(GetTime());
+            }
+            if (logCfg.enableThreadId) {
+                sb.Append(GetThreadId());
+            }
+
+            sb.Append($" {logCfg.logSeparate} {msg}");
+
+            if (isTrac) {
+                sb.Append(GetStackTrace());
+            }
+            return sb.ToString();
+        }
+
+        private static string GetTime() {
+            return $"  {DateTime.Now.ToString("hh:mm:ss--fff")}";
+        }
+        private static string GetThreadId() {
+            return $"  ThreadID:{Thread.CurrentThread.ManagedThreadId}";
+        }
+        private static string GetStackTrace() {
+            StackTrace st = new StackTrace(3, true);
+            StringBuilder trackInfo = new StringBuilder(100);
+
+            for (int i = 0; i < st.FrameCount; i++) {
+                StackFrame sf = st.GetFrame(i);
+                trackInfo.Append($"\n{sf.GetFileName()}::{sf.GetMethod()} line:{sf.GetFileLineNumber()}");
+            }
+
+            return $"\nStackTrace: {trackInfo}";
         }
     }
 
