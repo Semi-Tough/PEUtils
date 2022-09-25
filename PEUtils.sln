@@ -5,7 +5,7 @@ VisualStudioVersion = 17.3.32901.215
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PEUtils", "PEUtils\PEUtils.csproj", "{C058D2BC-C9E5-4D5D-9BDC-905FBCDD69B0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerLogTest", "ServerLogTest\ServerLogTest.csproj", "{2A1F5197-4E22-44BA-8F64-4A1F904AC22A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PEUtilsTest", "ServerLogTest\PEUtilsTest.csproj", "{2A1F5197-4E22-44BA-8F64-4A1F904AC22A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
