@@ -138,6 +138,7 @@ namespace PEUtils {
             }
 
         }
+
         public static void Log(string msg) {
             if (logCfg.enableLog == false) {
                 return;
@@ -145,9 +146,101 @@ namespace PEUtils {
             msg = DecorateLog($"{msg}", true);
             logger.Log(msg);
             if (logCfg.enableSave) {
-                WriteToFile(msg);
+                WriteToFile($"[L]{msg}");
             }
         }
+        public static void Log(object obj) {
+            if (logCfg.enableLog == false) {
+                return;
+            }
+            string msg = DecorateLog($"{obj}", true);
+            logger.Log(msg);
+            if (logCfg.enableSave) {
+                WriteToFile($"[L]{msg}");
+            }
+        }
+        public static void ColorLog(string msg, LogColor color) {
+            if (logCfg.enableLog == false) {
+                return;
+            }
+            msg = DecorateLog($"{msg}", true);
+            logger.Log(msg, color);
+            if (logCfg.enableSave) {
+                WriteToFile($"[L]{msg}");
+            }
+        }
+        public static void ColorLog(object obj, LogColor color) {
+            if (logCfg.enableLog == false) {
+                return;
+            }
+            string msg = DecorateLog($"{obj}", true);
+            logger.Log(msg, color);
+            if (logCfg.enableSave) {
+                WriteToFile($"[L]{msg}");
+            }
+        }
+        public static void Wain(string msg) {
+            if (logCfg.enableLog == false) {
+                return;
+            }
+            msg = DecorateLog($"{msg}", true);
+            logger.Wain(msg);
+            if (logCfg.enableSave) {
+                WriteToFile($"[W]{msg}");
+            }
+        }
+        public static void Wain(object obj) {
+            if (logCfg.enableLog == false) {
+                return;
+            }
+            string msg = DecorateLog($"{obj}", true);
+            logger.Wain(msg);
+            if (logCfg.enableSave) {
+                WriteToFile($"[W]{msg}");
+            }
+        }
+        public static void Error(string msg) {
+            if (logCfg.enableLog == false) {
+                return;
+            }
+            msg = DecorateLog($"{msg}", true);
+            logger.Error(msg);
+            if (logCfg.enableSave) {
+                WriteToFile($"[E]{msg}");
+            }
+        }
+        public static void Error(object obj) {
+            if (logCfg.enableLog == false) {
+                return;
+            }
+            string msg = DecorateLog($"{obj}", true);
+            logger.Error(msg);
+            if (logCfg.enableSave) {
+                WriteToFile($"[E]{msg}");
+            }
+        }
+        public static void Trace(string msg) {
+            if (logCfg.enableLog == false) {
+                return;
+            }
+            msg = DecorateLog($"{msg}", true);
+            logger.Log(msg, LogColor.Magenta);
+            if (logCfg.enableSave) {
+                WriteToFile($"[T]{msg}");
+            }
+        }
+        public static void Trace(object obj) {
+            if (logCfg.enableLog == false) {
+                return;
+            }
+            string msg = DecorateLog($"{obj}", true);
+            logger.Log(msg, LogColor.Magenta);
+            if (logCfg.enableSave) {
+                WriteToFile($"[T]{msg}");
+            }
+        }
+
+
         public static string DecorateLog(string msg, bool isTrac = false) {
             StringBuilder sb = new StringBuilder(logCfg.logPrefix, 100);
             if (logCfg.enableTime) {
@@ -184,7 +277,7 @@ namespace PEUtils {
         private static void WriteToFile(string msg) {
             if (streamWriter != null) {
                 try {
-                    streamWriter.WriteLine($"[L] { msg}");
+                    streamWriter.WriteLine($"{msg}");
                 }
                 catch {
                     streamWriter = null;
