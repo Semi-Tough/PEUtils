@@ -4,8 +4,41 @@ using System.IO;
 using System.Text;
 using System.Threading;
 
-namespace PEUtils {
+public static class ExtensionMethod {
+    public static void Log(this object o, string msg) {
+        PEUtils.PELog.Log(msg);
+    }
+    public static void Log(this object o,object obj) {
+        PEUtils.PELog.Log(obj);
+    }
+    public static void ColorLog(this object o, string msg, PEUtils.LogColor color) {
+        PEUtils.PELog.ColorLog(msg, color);
+    }
+    public static void ColorLog(this object o, object obj, PEUtils.LogColor color) {
+        PEUtils.PELog.ColorLog(obj, color);
+    }
+    public static void Wain(this object o, string msg) {
+        PEUtils.PELog.Wain(msg);
+    }
+    public static void Wain(this object o, object obj) {
+        PEUtils.PELog.Wain(obj);
+    }
+    public static void Error(this object o, string msg) {
+        PEUtils.PELog.Error(msg);
+    }
+    public static void Error(this object o, object obj) {
+        PEUtils.PELog.Error(obj);
+    }
+    public static void Trace(this object o, string msg) {
+        PEUtils.PELog.Trace(msg);
+    }
+    public static void Trace(this object o, object obj) {
+        PEUtils.PELog.Trace(obj);
+    }
 
+}
+
+namespace PEUtils {
     public static class PELog {
 
         class ConsoleLogger : ILogger {

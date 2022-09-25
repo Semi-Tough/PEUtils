@@ -5,7 +5,6 @@ namespace PEUtils {
         Unity,
         Console
     }
-
     public enum LogColor {
         None,
         Red,
@@ -15,9 +14,6 @@ namespace PEUtils {
         Magenta,
         Yellow
     }
-
-
-
     public class LogConfig {
         public string logPrefix = "#";
         public string logSeparate = ">>";
@@ -38,6 +34,5 @@ namespace PEUtils {
         void Log(string msg, LogColor color = LogColor.None);
         void Wain(string msg, LogColor color = LogColor.Yellow);
         void Error(string msg, LogColor color = LogColor.Red);
-
     }
 }
