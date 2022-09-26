@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading;
 
 namespace PEUtils {
@@ -28,8 +29,42 @@ namespace PEUtils {
         }
 
         public void UpdateTask() {
+            double nowTime = GetUTCMilliseconds();
+            foreach (KeyValuePair<int, TickTask> item in taskDic) {
+                TickTask task = item.Value;
+                ++task.loopIndex;
 
+                if (nowTime < task.destTime) {
+                    continue;
+                }
+                else {
+                    if (task.count > 0) {
+                        --task.count;
+                        if (task.count == 0) {
+                            FinishTask(task.tid);
+                        }
+                        else {
+                            task.destTime = task.startTime + task.delay * (task.loopIndex + 1);
+                            CallTaskCB(task.tid, task.taskCB);
+                        }
+                    }
+                    else {
+                        task.destTime = task.startTime + task.delay * (task.loopIndex + 1);
+                        CallTaskCB(task.tid, task.taskCB);
+                    }
+                }
+            }
         }
+
+        private void FinishTask(int tid) {
+            if (taskDic.TryRemove(tid, out TickTask task)) {
+                CallTaskCB(task.tid, task.taskCB);
+            }
+        }
+        private void CallTaskCB(int tid, Action<int> taskCB) {
+            taskCB?.Invoke(tid);
+        }
+
         public override int AddTask(uint delay, Action<int> taskCB, Action<int> cancleCB, int count = 1) {
             int tid = GenerateTid();
             double startTime = GetUTCMilliseconds();
@@ -75,6 +110,7 @@ namespace PEUtils {
             public int count;
             public double destTime;
             public double startTime;
+            public ulong loopIndex;
             public Action<int> taskCB;
             public Action<int> cancleCB;
 
