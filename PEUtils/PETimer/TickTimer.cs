@@ -1,12 +1,35 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Threading;
 
 namespace PEUtils {
     public class TickTimer : PETimer {
 
         private readonly DateTime startDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0);
         private readonly ConcurrentDictionary<int, TickTask> taskDic = new ConcurrentDictionary<int, TickTask>();
+        private readonly Thread timerThread;
+        public TickTimer(int interval = 0) {
+            if (interval > 0) {
+                void StartTick() {
+                    try {
+                        while (true) {
+                            UpdateTask();
+                            Thread.Sleep(interval);
+                        }
+                    }
+                    catch (ThreadAbortException e) {
+                        wainFunc?.Invoke($"Tick Thread Abort: {e}.");
+                    }
+                }
+                timerThread = new Thread(StartTick);
+                timerThread.Start();
 
+            }
+        }
+
+        public void UpdateTask() {
+
+        }
         public override int AddTask(uint delay, Action<int> taskCB, Action<int> cancleCB, int count = 1) {
             int tid = GenerateTid();
             double startTime = GetUTCMilliseconds();
@@ -17,15 +40,26 @@ namespace PEUtils {
                 return tid;
             }
             else {
+                wainFunc?.Invoke($"{tid} already exist.");
                 return -1;
             }
         }
 
-        public override bool DeleteTask(int delay) {
+        public override bool DeleteTask(int tid) {
+
+            if (taskDic.TryRemove(tid, out TickTask task)) {
+                task.cancleCB?.Invoke(tid);
+                return true;
+            }
+            wainFunc?.Invoke($"{tid} remove failed.");
             return false;
         }
 
         public override void Rest() {
+            taskDic.Clear();
+            if (timerThread != null) {
+                timerThread.Abort();
+            }
         }
 
         protected override int GenerateTid() {
