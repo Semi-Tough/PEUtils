@@ -51,7 +51,7 @@ namespace PEUtils {
         public override bool DeleteTask(int tid) {
 
             if (taskDic.TryRemove(tid, out TickTask task)) {
-                if (setHandle&&task.cancleCb!=null) {
+                if (setHandle && task.cancleCb != null) {
                     packQue.Enqueue(new TickTaskPack(tid, task.cancleCb));
                 }
                 else {
@@ -63,8 +63,8 @@ namespace PEUtils {
             return false;
         }
         public void HandleTask() {
-            while (packQue!=null&&packQue.Count>0) {
-                if(packQue.TryDequeue(out TickTaskPack pack)) {
+            while (packQue != null && packQue.Count > 0) {
+                if (packQue.TryDequeue(out TickTaskPack pack)) {
                     pack.cb?.Invoke(pack.tid);
                 }
                 else {

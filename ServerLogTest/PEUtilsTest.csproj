@@ -8,7 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PEUtils\PEUtils.csproj" />
+    <ProjectReference Include="..\PETimer\PETimer.csproj" />
+    <ProjectReference Include="..\PEUtils\PELog.csproj" />
   </ItemGroup>
 
 </Project>

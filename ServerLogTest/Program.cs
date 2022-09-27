@@ -8,9 +8,9 @@ internal class Program {
         //test.Test();
 
         PETimerTest pETimer = new();
-        //pETimer.TickTimerTest();
-        //pETimer.TickTimerTestHandle();
-        //pETimer.TickTimerTestUpdate();
-        pETimer.TickTimerTestUpdateHandle();
+        pETimer.TickTimerTest();
+        ////pETimer.TickTimerTestHandle();
+        ////pETimer.TickTimerTestUpdate();
+        //pETimer.TickTimerTestUpdateHandle();
     }
 }

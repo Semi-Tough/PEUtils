@@ -1,7 +1,6 @@
 ﻿using System;
 
-namespace PEUtils
-{
+namespace PEUtils {
     public enum LoggerType
     {
         Unity,

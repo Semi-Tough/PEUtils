@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32901.215
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PEUtils", "PEUtils\PEUtils.csproj", "{C058D2BC-C9E5-4D5D-9BDC-905FBCDD69B0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PELog", "PEUtils\PELog.csproj", "{C058D2BC-C9E5-4D5D-9BDC-905FBCDD69B0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PEUtilsTest", "ServerLogTest\PEUtilsTest.csproj", "{2A1F5197-4E22-44BA-8F64-4A1F904AC22A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PETimer", "PETimer\PETimer.csproj", "{4C9EEC8E-4199-4D69-A583-8053F7ECF0DE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{2A1F5197-4E22-44BA-8F64-4A1F904AC22A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2A1F5197-4E22-44BA-8F64-4A1F904AC22A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2A1F5197-4E22-44BA-8F64-4A1F904AC22A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C9EEC8E-4199-4D69-A583-8053F7ECF0DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C9EEC8E-4199-4D69-A583-8053F7ECF0DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C9EEC8E-4199-4D69-A583-8053F7ECF0DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C9EEC8E-4199-4D69-A583-8053F7ECF0DE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

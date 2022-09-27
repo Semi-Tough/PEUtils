@@ -1,6 +1,6 @@
 ﻿using PEUtils;
 
-namespace PEUtilsTest {
+namespace PEUtils {
     internal class PETimerTest {
         public void TickTimerTest() {
             PELog.InitSetting();
