@@ -18,7 +18,6 @@ namespace PEUtils {
             if (setHandle) {
                 packQue = new ConcurrentQueue<TickTaskPack>();
             }
-
             if (interval > 0) {
                 void StartTick() {
                     try {
@@ -63,7 +62,6 @@ namespace PEUtils {
             wainFunc?.Invoke($"{tid} remove failed.");
             return false;
         }
-
         public void HandleTask() {
             while (packQue!=null&&packQue.Count>0) {
                 if(packQue.TryDequeue(out TickTaskPack pack)) {
@@ -79,12 +77,12 @@ namespace PEUtils {
             double nowTime = GetUtcMilliseconds();
             foreach (KeyValuePair<int, TickTask> item in taskDic) {
                 TickTask task = item.Value;
-                ++task.loopIndex;
 
                 if (nowTime < task.destTime) {
                     continue;
                 }
 
+                ++task.loopIndex;
                 if (task.count > 0) {
                     --task.count;
                     if (task.count == 0) {
@@ -158,7 +156,6 @@ namespace PEUtils {
                 this.count = count;
             }
         }
-
         private class TickTaskPack {
             public int tid;
             public Action<int> cb;
