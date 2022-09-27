@@ -346,7 +346,7 @@ namespace PEUtils {
             return sb.ToString();
         }
         private static string GetTime() {
-            return $"  {DateTime.Now.ToString("hh:mm:ss--fff")}";
+            return $"  {DateTime.Now:hh:mm:ss--fff}";
         }
         private static string GetThreadId() {
             return $"  ThreadID:{Thread.CurrentThread.ManagedThreadId}";
