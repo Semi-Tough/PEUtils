@@ -49,13 +49,15 @@ namespace PEUtils {
                     do {
                         --task.count;
                         ++task.loopIndex;
-                        int delay = (int)task.delay;
+                        int delay = (int)(task.delay + task.fixDelta);
                         if (delay > 0) {
                             await Task.Delay(delay, task.ct);
                         }
                         else {
                             errorFunc?.Invoke($"tid:{task.tid} delayTime error.");
                         }
+                        TimeSpan ts = DateTime.UtcNow - task.startTime;
+                        task.fixDelta = (int)(task.delay * task.loopIndex - ts.TotalMilliseconds);
                         CallBackTaskCb(task);
                     } while (task.count > 0);
                 }
@@ -63,16 +65,19 @@ namespace PEUtils {
                     while (true) {
                         --task.count;
                         ++task.loopIndex;
-                        int delay = (int)task.delay;
+                        int delay = (int)(task.delay + task.fixDelta);
                         if (delay > 0) {
                             await Task.Delay(delay, task.ct);
                         }
                         else {
                             errorFunc?.Invoke($"tid:{task.tid} delayTime error.");
                         }
+                        TimeSpan ts = DateTime.UtcNow - task.startTime;
+                        task.fixDelta = (int)(task.delay * task.loopIndex - ts.TotalMilliseconds);
                         CallBackTaskCb(task);
                     }
                 }
+
 
             });
         }
@@ -85,6 +90,7 @@ namespace PEUtils {
             public int count;
             public DateTime startTime;
             public ulong loopIndex;
+            public int fixDelta;
             public Action<int> taskCb;
             public Action<int> cancleCb;
             public CancellationTokenSource cts;
@@ -97,6 +103,7 @@ namespace PEUtils {
                 this.cancleCb = cancleCb;
                 this.count = count;
                 loopIndex = 0;
+                fixDelta = 0;
                 cts = new CancellationTokenSource();
                 ct = cts.Token;
             }
