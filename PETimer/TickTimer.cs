@@ -68,7 +68,7 @@ namespace PEUtils {
                     pack.cb?.Invoke(pack.tid);
                 }
                 else {
-                    errorFunc?.Invoke($"packQue Dequeue Data Error");
+                    errorFunc?.Invoke($"packQue Dequeue Data Error.");
                 }
 
             }

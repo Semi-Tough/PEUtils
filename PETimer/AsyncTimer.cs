@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace PEUtils {
     internal class AsyncTimer : PETimer {
@@ -7,8 +9,17 @@ namespace PEUtils {
 
         private const string tidLock = "AsyncTimer_tidLock";
         private readonly ConcurrentDictionary<int, AsyncTask> taskDic;
-        public override int AddTask(uint delay, Action<int> taskCB, Action<int> cancleCB, int count = 1) {
-            throw new NotImplementedException();
+        public override int AddTask(uint delay, Action<int> taskCb, Action<int> cancleCb, int count = 1) {
+            int tid = GenerateTid();
+            AsyncTask task = new AsyncTask(tid, delay, taskCb, cancleCb, count);
+            RunTaskInPool(task);
+            if (taskDic.TryAdd(tid, task)) {
+                return tid;
+            }
+            else {
+                wainFunc?.Invoke($"key:{tid} already exist");
+                return -1;
+            }
         }
 
         public override bool DeleteTask(int tid) {
@@ -32,7 +43,42 @@ namespace PEUtils {
                 }
             }
         }
+        private void RunTaskInPool(AsyncTask task) {
+            Task.Run(async () => {
+                if (task.count > 0) {
+                    do {
+                        --task.count;
+                        ++task.loopIndex;
+                        int delay = (int)task.delay;
+                        if (delay > 0) {
+                            await Task.Delay(delay, task.ct);
+                        }
+                        else {
+                            errorFunc?.Invoke($"tid:{task.tid} delayTime error.");
+                        }
+                        CallBackTaskCb(task);
+                    } while (task.count > 0);
+                }
+                else {
+                    while (true) {
+                        --task.count;
+                        ++task.loopIndex;
+                        int delay = (int)task.delay;
+                        if (delay > 0) {
+                            await Task.Delay(delay, task.ct);
+                        }
+                        else {
+                            errorFunc?.Invoke($"tid:{task.tid} delayTime error.");
+                        }
+                        CallBackTaskCb(task);
+                    }
+                }
 
+            });
+        }
+        private void CallBackTaskCb(AsyncTask task) {
+
+        }
         class AsyncTask {
             public int tid;
             public uint delay;
@@ -41,7 +87,8 @@ namespace PEUtils {
             public ulong loopIndex;
             public Action<int> taskCb;
             public Action<int> cancleCb;
-
+            public CancellationTokenSource cts;
+            public CancellationToken ct;
             public AsyncTask(int tid, uint delay, Action<int> taskCb, Action<int> cancleCb, int count) {
                 this.tid = tid;
                 this.delay = delay;
@@ -49,6 +96,9 @@ namespace PEUtils {
                 this.taskCb = taskCb;
                 this.cancleCb = cancleCb;
                 this.count = count;
+                loopIndex = 0;
+                cts = new CancellationTokenSource();
+                ct = cts.Token;
             }
         }
     }
