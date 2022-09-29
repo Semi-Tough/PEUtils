@@ -6,15 +6,15 @@ using System.Threading;
 namespace PEUtils {
     public class TickTimer : PETimer {
 
+        private readonly bool setHandle;
         private readonly Thread timerThread;
         private const string tidLock = "TickTimer_tidLock";
-        private readonly bool setHandle;
         private readonly ConcurrentQueue<TickTaskPack> packQue;
         private readonly ConcurrentDictionary<int, TickTask> taskDic;
         private readonly DateTime startDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0);
         public TickTimer(int interval = 0, bool setHandle = true) {
-            taskDic = new ConcurrentDictionary<int, TickTask>();
             this.setHandle = setHandle;
+            taskDic = new ConcurrentDictionary<int, TickTask>();
             if (setHandle) {
                 packQue = new ConcurrentQueue<TickTaskPack>();
             }
@@ -27,7 +27,7 @@ namespace PEUtils {
                         }
                     }
                     catch (ThreadAbortException e) {
-                        wainFunc?.Invoke($"Tick Thread Abort: {e}.");
+                        errorFunc?.Invoke($"Tick Thread Abort: {e}.");
                     }
                 }
                 timerThread = new Thread(StartTick);
@@ -44,9 +44,10 @@ namespace PEUtils {
             if (taskDic.TryAdd(tid, task)) {
                 return tid;
             }
-
-            wainFunc?.Invoke($"{tid} already exist.");
-            return -1;
+            else {
+                wainFunc?.Invoke($"key:{tid} already exist.");
+                return -1;
+            }
         }
         public override bool DeleteTask(int tid) {
 
@@ -56,19 +57,22 @@ namespace PEUtils {
                 }
                 else {
                     task.cancleCb?.Invoke(tid);
-                    return true;
                 }
+                logFunc?.Invoke($"Remove tid:{tid} in taskDic success.");
+                return true;
             }
-            wainFunc?.Invoke($"{tid} remove failed.");
-            return false;
+            else {
+                errorFunc?.Invoke($"Remove task: {tid} in taskDic failed.");
+                return false;
+            }
         }
         public void HandleTask() {
-            while (packQue != null && packQue.Count > 0) {
+            while (packQue != null && !packQue.IsEmpty) {
                 if (packQue.TryDequeue(out TickTaskPack pack)) {
                     pack.cb?.Invoke(pack.tid);
                 }
                 else {
-                    errorFunc?.Invoke($"packQue Dequeue Data Error.");
+                    errorFunc?.Invoke($"Dequeue task:{pack.tid} in packQue failed.");
                 }
 
             }
@@ -102,6 +106,10 @@ namespace PEUtils {
         private void FinishTask(int tid) {
             if (taskDic.TryRemove(tid, out TickTask task)) {
                 CallTaskCb(task.tid, task.taskCb);
+                logFunc?.Invoke($"Task tid:{task.tid} completion.");
+            }
+            else {
+                errorFunc?.Invoke($"Remove task: {tid} in taskDic failed.");
             }
         }
         private void CallTaskCb(int tid, Action<int> taskCb) {
@@ -113,10 +121,11 @@ namespace PEUtils {
             }
         }
         public override void Rest() {
-            if (!packQue.IsEmpty) {
+            if (packQue != null && !packQue.IsEmpty) {
                 wainFunc?.Invoke($"CallBack is not Empty.");
             }
             taskDic.Clear();
+            globalTid = 0;
             timerThread?.Abort();
         }
         protected override int GenerateTid() {

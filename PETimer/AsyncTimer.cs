@@ -6,9 +6,19 @@ using System.Threading.Tasks;
 namespace PEUtils {
     internal class AsyncTimer : PETimer {
 
-
+        private readonly bool setHandle;
         private const string tidLock = "AsyncTimer_tidLock";
+        private readonly ConcurrentQueue<AsyncTaskPack> packQue;
         private readonly ConcurrentDictionary<int, AsyncTask> taskDic;
+
+        public AsyncTimer(bool setHandle) {
+            this.setHandle = setHandle;
+            taskDic = new ConcurrentDictionary<int, AsyncTask>();
+            if (setHandle) {
+                packQue = new ConcurrentQueue<AsyncTaskPack>();
+            }
+        }
+
         public override int AddTask(uint delay, Action<int> taskCb, Action<int> cancleCb, int count = 1) {
             int tid = GenerateTid();
             AsyncTask task = new AsyncTask(tid, delay, taskCb, cancleCb, count);
@@ -23,23 +33,29 @@ namespace PEUtils {
         }
 
         public override bool DeleteTask(int tid) {
-            throw new NotImplementedException();
+            if (taskDic.TryRemove(tid, out AsyncTask task)) {
+                if (setHandle && task.cancleCb != null) {
+                    packQue.Enqueue(new AsyncTaskPack(tid, task.cancleCb));
+                }
+                else {
+                    task.cancleCb?.Invoke(tid);
+                }
+                task.cts.Cancel();
+                logFunc?.Invoke($"Remove tid:{tid} in taskDic success.");
+                return true;
+            }
+            else {
+                errorFunc?.Invoke($"Remove task: {tid} in taskDic failed.");
+                return false;
+            }
         }
-
-        public override void Rest() {
-            throw new NotImplementedException();
-        }
-
-        protected override int GenerateTid() {
-            lock (tidLock) {
-                while (true) {
-                    ++globalTid;
-                    if (globalTid == int.MaxValue) {
-                        globalTid = 0;
-                    }
-                    if (!taskDic.ContainsKey(globalTid)) {
-                        return globalTid;
-                    }
+        public void HandleTask() {
+            while (packQue != null && !packQue.IsEmpty) {
+                if (packQue.TryDequeue(out AsyncTaskPack pack)) {
+                    pack.cb?.Invoke(pack.tid);
+                }
+                else {
+                    errorFunc?.Invoke($"Dequeue task:{pack.tid} in packQue failed.");
                 }
             }
         }
@@ -56,14 +72,21 @@ namespace PEUtils {
                         else {
                             errorFunc?.Invoke($"tid:{task.tid} delayTime error.");
                         }
-                        TimeSpan ts = DateTime.UtcNow - task.startTime;
-                        task.fixDelta = (int)(task.delay * task.loopIndex - ts.TotalMilliseconds);
-                        CallBackTaskCb(task);
+
+                        if (task.count == 0) {
+                            FinishTask(task.tid);
+                        }
+                        else {
+                            TimeSpan ts = DateTime.UtcNow - task.startTime;
+                            task.fixDelta = (int)(task.delay * task.loopIndex - ts.TotalMilliseconds);
+                            CallBackTaskCb(task);
+                        }
+
+
                     } while (task.count > 0);
                 }
                 else {
                     while (true) {
-                        --task.count;
                         ++task.loopIndex;
                         int delay = (int)(task.delay + task.fixDelta);
                         if (delay > 0) {
@@ -81,8 +104,43 @@ namespace PEUtils {
 
             });
         }
+        private void FinishTask(int tid) {
+            if (taskDic.TryRemove(tid, out AsyncTask task)) {
+                CallBackTaskCb(task);
+                logFunc?.Invoke($"Task tid:{tid} completion.");
+            }
+            else {
+                errorFunc?.Invoke($"Remove task: {tid} in taskDic failed.");
+            }
+        }
         private void CallBackTaskCb(AsyncTask task) {
+            if (setHandle) {
+                packQue.Enqueue(new AsyncTaskPack(task.tid, task.cancleCb));
+            }
+            else {
+                task.taskCb?.Invoke(task.tid);
+            }
+        }
+        public override void Rest() {
+            if (packQue != null && !packQue.IsEmpty) {
+                wainFunc?.Invoke($"CallBack is not Empty.");
+            }
+            taskDic.Clear();
+            globalTid = 0;
 
+        }
+        protected override int GenerateTid() {
+            lock (tidLock) {
+                while (true) {
+                    ++globalTid;
+                    if (globalTid == int.MaxValue) {
+                        globalTid = 0;
+                    }
+                    if (!taskDic.ContainsKey(globalTid)) {
+                        return globalTid;
+                    }
+                }
+            }
         }
         class AsyncTask {
             public int tid;
@@ -106,6 +164,14 @@ namespace PEUtils {
                 fixDelta = 0;
                 cts = new CancellationTokenSource();
                 ct = cts.Token;
+            }
+        }
+        class AsyncTaskPack {
+            public int tid;
+            public Action<int> cb;
+            public AsyncTaskPack(int tid, Action<int> cb) {
+                this.tid = tid;
+                this.cb = cb;
             }
         }
     }
