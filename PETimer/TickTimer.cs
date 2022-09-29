@@ -62,7 +62,7 @@ namespace PEUtils {
                 return true;
             }
             else {
-                errorFunc?.Invoke($"Remove task: {tid} in taskDic failed.");
+                wainFunc?.Invoke($"Remove task: {tid} in taskDic failed.");
                 return false;
             }
         }
@@ -72,7 +72,7 @@ namespace PEUtils {
                     pack.cb?.Invoke(pack.tid);
                 }
                 else {
-                    errorFunc?.Invoke($"Dequeue task:{pack.tid} in packQue failed.");
+                    wainFunc?.Invoke($"Dequeue task:{pack.tid} in packQue failed.");
                 }
 
             }
@@ -106,10 +106,9 @@ namespace PEUtils {
         private void FinishTask(int tid) {
             if (taskDic.TryRemove(tid, out TickTask task)) {
                 CallTaskCb(task.tid, task.taskCb);
-                logFunc?.Invoke($"Task tid:{task.tid} completion.");
             }
             else {
-                errorFunc?.Invoke($"Remove task: {tid} in taskDic failed.");
+                wainFunc?.Invoke($"Remove task: {tid} in taskDic failed.");
             }
         }
         private void CallTaskCb(int tid, Action<int> taskCb) {

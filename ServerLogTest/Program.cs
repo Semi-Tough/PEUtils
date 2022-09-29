@@ -1,5 +1,4 @@
 ﻿using PEUtils;
-using PEUtilsTest;
 
 internal class Program {
 
@@ -8,11 +7,11 @@ internal class Program {
         //test.Test();
 
         PETimerTest pETimer = new();
-        pETimer.TickTimerTest();
+        //pETimer.TickTimerTest();
         //pETimer.TickTimerTestHandle();
         //pETimer.TickTimerTestUpdate();
         //pETimer.TickTimerTestUpdateHandle();
-        Console.WriteLine();
-
+        pETimer.AsyncTimerTest();
+        //pETimer.AsyncTimerTestHandle();
     }
 }

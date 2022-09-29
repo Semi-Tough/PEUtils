@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace PEUtils {
-    internal class AsyncTimer : PETimer {
+    public class AsyncTimer : PETimer {
 
         private readonly bool setHandle;
         private const string tidLock = "AsyncTimer_tidLock";
@@ -22,8 +22,8 @@ namespace PEUtils {
         public override int AddTask(uint delay, Action<int> taskCb, Action<int> cancleCb, int count = 1) {
             int tid = GenerateTid();
             AsyncTask task = new AsyncTask(tid, delay, taskCb, cancleCb, count);
-            RunTaskInPool(task);
             if (taskDic.TryAdd(tid, task)) {
+                RunTaskInPool(task);
                 return tid;
             }
             else {
@@ -33,6 +33,7 @@ namespace PEUtils {
         }
 
         public override bool DeleteTask(int tid) {
+
             if (taskDic.TryRemove(tid, out AsyncTask task)) {
                 if (setHandle && task.cancleCb != null) {
                     packQue.Enqueue(new AsyncTaskPack(tid, task.cancleCb));
@@ -45,7 +46,7 @@ namespace PEUtils {
                 return true;
             }
             else {
-                errorFunc?.Invoke($"Remove task: {tid} in taskDic failed.");
+                wainFunc?.Invoke($"Remove task: {tid} in taskDic failed.");
                 return false;
             }
         }
@@ -55,14 +56,14 @@ namespace PEUtils {
                     pack.cb?.Invoke(pack.tid);
                 }
                 else {
-                    errorFunc?.Invoke($"Dequeue task:{pack.tid} in packQue failed.");
+                    wainFunc?.Invoke($"Dequeue task:{pack.tid} in packQue failed.");
                 }
             }
         }
         private void RunTaskInPool(AsyncTask task) {
             Task.Run(async () => {
                 if (task.count > 0) {
-                    do {
+                    while (task.count > 0) {
                         --task.count;
                         ++task.loopIndex;
                         int delay = (int)(task.delay + task.fixDelta);
@@ -70,7 +71,7 @@ namespace PEUtils {
                             await Task.Delay(delay, task.ct);
                         }
                         else {
-                            errorFunc?.Invoke($"tid:{task.tid} delayTime error.");
+                            wainFunc?.Invoke($"tid:{task.tid} delayTime error.");
                         }
 
                         if (task.count == 0) {
@@ -81,9 +82,7 @@ namespace PEUtils {
                             task.fixDelta = (int)(task.delay * task.loopIndex - ts.TotalMilliseconds);
                             CallBackTaskCb(task);
                         }
-
-
-                    } while (task.count > 0);
+                    }
                 }
                 else {
                     while (true) {
@@ -93,29 +92,26 @@ namespace PEUtils {
                             await Task.Delay(delay, task.ct);
                         }
                         else {
-                            errorFunc?.Invoke($"tid:{task.tid} delayTime error.");
+                            wainFunc?.Invoke($"tid:{task.tid} delayTime error.");
                         }
                         TimeSpan ts = DateTime.UtcNow - task.startTime;
                         task.fixDelta = (int)(task.delay * task.loopIndex - ts.TotalMilliseconds);
                         CallBackTaskCb(task);
                     }
                 }
-
-
-            });
+            }, task.ct);
         }
         private void FinishTask(int tid) {
             if (taskDic.TryRemove(tid, out AsyncTask task)) {
                 CallBackTaskCb(task);
-                logFunc?.Invoke($"Task tid:{tid} completion.");
             }
             else {
-                errorFunc?.Invoke($"Remove task: {tid} in taskDic failed.");
+                wainFunc?.Invoke($"Remove task: {tid} in taskDic failed.");
             }
         }
         private void CallBackTaskCb(AsyncTask task) {
             if (setHandle) {
-                packQue.Enqueue(new AsyncTaskPack(task.tid, task.cancleCb));
+                packQue.Enqueue(new AsyncTaskPack(task.tid, task.taskCb));
             }
             else {
                 task.taskCb?.Invoke(task.tid);
@@ -153,6 +149,7 @@ namespace PEUtils {
             public Action<int> cancleCb;
             public CancellationTokenSource cts;
             public CancellationToken ct;
+
             public AsyncTask(int tid, uint delay, Action<int> taskCb, Action<int> cancleCb, int count) {
                 this.tid = tid;
                 this.delay = delay;
