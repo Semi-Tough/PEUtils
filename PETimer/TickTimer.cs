@@ -7,7 +7,7 @@ namespace PEUtils {
     public class TickTimer : PETimer {
 
         private readonly Thread timerThread;
-        private const string tidLock = "PETimer_tidLock";
+        private const string tidLock = "TickTimer_tidLock";
         private readonly bool setHandle;
         private readonly ConcurrentQueue<TickTaskPack> packQue;
         private readonly ConcurrentDictionary<int, TickTask> taskDic;

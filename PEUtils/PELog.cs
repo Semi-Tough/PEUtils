@@ -7,64 +7,33 @@ using System.Threading;
 
 public static class ExtensionMethod {
     public static void Log(this object o, string msg) {
-        if (o is null) {
-            throw new ArgumentNullException(nameof(o));
-        }
         PELog.Log(msg);
     }
     public static void Log(this object o, object obj) {
-        if (o is null) {
-            throw new ArgumentNullException(nameof(o));
-        }
-
         PELog.Log(obj);
     }
     public static void ColorLog(this object o, string msg, LogColor color) {
-        if (o is null) {
-            throw new ArgumentNullException(nameof(o));
-        }
         PELog.ColorLog(msg, color);
     }
     public static void ColorLog(this object o, object obj, LogColor color) {
-        if (o is null) {
-            throw new ArgumentNullException(nameof(o));
-        }
         PELog.ColorLog(obj, color);
     }
     public static void Wain(this object o, string msg) {
-        if (o is null) {
-            throw new ArgumentNullException(nameof(o));
-        }
         PELog.Wain(msg);
     }
     public static void Wain(this object o, object obj) {
-        if (o is null) {
-            throw new ArgumentNullException(nameof(o));
-        }
         PELog.Wain(obj);
     }
     public static void Error(this object o, string msg) {
-        if (o is null) {
-            throw new ArgumentNullException(nameof(o));
-        }
         PELog.Error(msg);
     }
     public static void Error(this object o, object obj) {
-        if (o is null) {
-            throw new ArgumentNullException(nameof(o));
-        }
         PELog.Error(obj);
     }
     public static void Trace(this object o, string msg) {
-        if (o is null) {
-            throw new ArgumentNullException(nameof(o));
-        }
         PELog.Trace(msg);
     }
     public static void Trace(this object o, object obj) {
-        if (o is null) {
-            throw new ArgumentNullException(nameof(o));
-        }
         PELog.Trace(obj);
     }
 
