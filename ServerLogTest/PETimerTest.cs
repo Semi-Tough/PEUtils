@@ -197,8 +197,8 @@
 
             Task.Run(async () => {
                 while (true) {
-                    tickTimer.UpdateTask();
                     tickTimer.HandleTask();
+                    tickTimer.UpdateTask();
                     await Task.Delay(2);
                 }
             });
@@ -230,7 +230,7 @@
                 errorFunc = PELog.Error
             };
             uint interval = 66;
-            int count = 0;
+            int count = 10;
             int sum = 0;
             int tid = 0;
             Task.Run(async () => {
@@ -325,6 +325,51 @@
         }
 
         #endregion
-    }
 
+        #region FrameTimer
+        public void FrameTimerTest() {
+            PELog.InitSetting();
+            FrameTimer timer = new FrameTimer(100) {
+                logFunc = PELog.Log,
+                wainFunc = PELog.Wain,
+                errorFunc = PELog.Error
+            };
+            uint interval = 10;
+            int count = 10;
+            int sum = 0;
+            int tid = 0;
+            Task.Run(async () => {
+                await Task.Delay(2000);
+                DateTime startTime = DateTime.UtcNow;
+                tid = timer.AddTask(
+                    interval,
+                    (int tid) => {
+                        PELog.ColorLog($"tid: {tid} work", LogColor.Green);
+                    },
+                    (int tid) => {
+                        PELog.ColorLog($"tid: {tid} cancle", LogColor.Yellow);
+                    },
+                    count
+                    );
+                while (true) {
+                    timer.UpdateTask();
+                    Thread.Sleep(66);
+                }
+            });
+
+
+            while (true) {
+                string? str = Console.ReadLine();
+                if (str == "cal") {
+                    PELog.ColorLog($"计算平均偏差: {sum * 1.0f / count}", LogColor.Red);
+                }
+                else if (str == "del") {
+                    PELog.ColorLog($"取消任务: {tid}", LogColor.Red);
+                    timer.DeleteTask(tid);
+                }
+            }
+        }
+
+        #endregion
+    }
 }

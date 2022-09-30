@@ -27,7 +27,6 @@ namespace PEUtils {
                 return tid;
             }
         }
-
         public override bool DeleteTask(int tid) {
             if (taskDic.TryGetValue(tid, out FrameTask task)) {
                 if (taskDic.Remove(tid)) {
@@ -45,11 +44,39 @@ namespace PEUtils {
                 return false;
             }
         }
-
         public override void Rest() {
-            throw new NotImplementedException();
+            taskDic.Clear();
+            tidList.Clear();
+            globalTid = 0;
         }
+        public void UpdateTask() {
+            ++nowFrame;
+            tidList.Clear();
+            foreach (var item in taskDic) {
+                FrameTask task = item.Value;
+                if (task.destFrame <= nowFrame) {
+                    task.taskCb?.Invoke(task.tid);
+                    task.destFrame += task.delay;
+                    --task.count;
+                    if (task.count == 0) {
+                        tidList.Add(task.tid);
+                    }
+                }
+            }
+            FinishTask();
 
+        }
+        private void FinishTask() {
+            if (tidList.Count <= 0) return;
+            for (int i = 0; i < tidList.Count; i++) {
+                if (taskDic.Remove(tidList[i])) {
+                    logFunc?.Invoke($"Task tid:{tidList[i]} is completion.");
+                }
+                else {
+                    wainFunc?.Invoke($"Remove task: {tidList[i]} in taskDic failed.");
+                }
+            }
+        }
         protected override int GenerateTid() {
             lock (tidLock) {
                 while (true) {
@@ -63,7 +90,6 @@ namespace PEUtils {
                 }
             }
         }
-
         class FrameTask {
             public int tid;
             public uint delay;

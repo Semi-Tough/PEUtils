@@ -18,7 +18,6 @@ namespace PEUtils {
                 packQue = new ConcurrentQueue<AsyncTaskPack>();
             }
         }
-
         public override int AddTask(uint delay, Action<int> taskCb, Action<int> cancleCb, int count = 1) {
             int tid = GenerateTid();
             AsyncTask task = new AsyncTask(tid, delay, taskCb, cancleCb, count);
@@ -31,7 +30,6 @@ namespace PEUtils {
                 return -1;
             }
         }
-
         public override bool DeleteTask(int tid) {
 
             if (taskDic.TryRemove(tid, out AsyncTask task)) {
@@ -73,15 +71,14 @@ namespace PEUtils {
                         else {
                             wainFunc?.Invoke($"tid:{task.tid} delayTime error.");
                         }
+                        TimeSpan ts = DateTime.UtcNow - task.startTime;
+                        task.fixDelta = (int)(task.delay * task.loopIndex - ts.TotalMilliseconds);
+                        CallBackTaskCb(task);
 
                         if (task.count == 0) {
                             FinishTask(task.tid);
                         }
-                        else {
-                            TimeSpan ts = DateTime.UtcNow - task.startTime;
-                            task.fixDelta = (int)(task.delay * task.loopIndex - ts.TotalMilliseconds);
-                            CallBackTaskCb(task);
-                        }
+
                     }
                 }
                 else {
@@ -103,7 +100,7 @@ namespace PEUtils {
         }
         private void FinishTask(int tid) {
             if (taskDic.TryRemove(tid, out AsyncTask task)) {
-                CallBackTaskCb(task);
+                logFunc?.Invoke($"Task tid:{tid} is completion.");
             }
             else {
                 wainFunc?.Invoke($"Remove task: {tid} in taskDic failed.");

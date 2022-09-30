@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Threading;
 
 namespace PEUtils {
@@ -79,7 +78,7 @@ namespace PEUtils {
         }
         public void UpdateTask() {
             double nowTime = GetUtcMilliseconds();
-            foreach (KeyValuePair<int, TickTask> item in taskDic) {
+            foreach (var item in taskDic) {
                 TickTask task = item.Value;
 
                 if (nowTime < task.destTime) {
@@ -89,12 +88,10 @@ namespace PEUtils {
                 ++task.loopIndex;
                 if (task.count > 0) {
                     --task.count;
+                    task.destTime = task.startTime + task.delay * (task.loopIndex + 1);
+                    CallTaskCb(task.tid, task.taskCb);
                     if (task.count == 0) {
                         FinishTask(task.tid);
-                    }
-                    else {
-                        task.destTime = task.startTime + task.delay * (task.loopIndex + 1);
-                        CallTaskCb(task.tid, task.taskCb);
                     }
                 }
                 else {
@@ -105,7 +102,7 @@ namespace PEUtils {
         }
         private void FinishTask(int tid) {
             if (taskDic.TryRemove(tid, out TickTask task)) {
-                CallTaskCb(task.tid, task.taskCb);
+                logFunc?.Invoke($"Task tid:{tid} is completion.");
             }
             else {
                 wainFunc?.Invoke($"Remove task: {tid} in taskDic failed.");

@@ -11,7 +11,10 @@ internal class Program {
         //pETimer.TickTimerTestHandle();
         //pETimer.TickTimerTestUpdate();
         //pETimer.TickTimerTestUpdateHandle();
-        pETimer.AsyncTimerTest();
+
+        //pETimer.AsyncTimerTest();
         //pETimer.AsyncTimerTestHandle();
+
+        pETimer.FrameTimerTest();
     }
 }
